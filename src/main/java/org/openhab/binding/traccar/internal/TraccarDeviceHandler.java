@@ -181,6 +181,25 @@ public class TraccarDeviceHandler extends BaseThingHandler {
             updateState(CHANNEL_SPEED, new QuantityType<>(convertedSpeed, speedUnit));
         }
 
+        // Update altitude (elevation)
+        Object altObj = position.get("altitude");
+        if (altObj instanceof Number) {
+            double altitude = ((Number) altObj).doubleValue();
+            updateState(CHANNEL_ALTITUDE, new QuantityType<>(altitude, SIUnits.METRE));
+        }
+
+        // Update GPS validity
+        Object validObj = position.get("valid");
+        if (validObj instanceof Boolean valid) {
+            updateState(CHANNEL_VALID, OnOffType.from(valid));
+        }
+
+        // Update protocol
+        Object protocolObj = position.get("protocol");
+        if (protocolObj != null) {
+            updateState(CHANNEL_PROTOCOL, new StringType(protocolObj.toString()));
+        }
+
         // Update course (direction/heading)
         Object courseObj = position.get("course");
         if (courseObj instanceof Number) {
@@ -214,17 +233,53 @@ public class TraccarDeviceHandler extends BaseThingHandler {
                 updateState(CHANNEL_BATTERY_LEVEL, new QuantityType<>(battery, Units.PERCENT));
             }
 
-            // Odometer
+            // Odometer - support both OSMand (odometer) and Teltonika (totalDistance)
             Object odometerObj = attributes.get("odometer");
+            if (odometerObj == null) {
+                odometerObj = attributes.get("totalDistance");
+                logger.debug("Using totalDistance for odometer: {}", odometerObj);
+            } else {
+                logger.debug("Using odometer attribute: {}", odometerObj);
+            }
             if (odometerObj instanceof Number) {
-                double odometer = ((Number) odometerObj).doubleValue();
-                updateState(CHANNEL_ODOMETER, new QuantityType<>(odometer, SIUnits.METRE));
+                double odometerMeters = ((Number) odometerObj).doubleValue();
+                logger.debug("Odometer: {} meters", odometerMeters);
+                updateState(CHANNEL_ODOMETER, new QuantityType<>(odometerMeters, SIUnits.METRE));
             }
 
             // Motion detection
             Object motionObj = attributes.get("motion");
             if (motionObj instanceof Boolean motion) {
                 updateState(CHANNEL_MOTION, OnOffType.from(motion));
+            }
+
+            // Engine hours (in milliseconds from Traccar)
+            Object hoursObj = attributes.get("hours");
+            if (hoursObj instanceof Number) {
+                double hoursMs = ((Number) hoursObj).doubleValue();
+                double hoursValue = hoursMs / 3600000.0; // Convert milliseconds to hours
+                logger.debug("Engine hours: {} ms = {} hours", hoursMs, hoursValue);
+                updateState(CHANNEL_HOURS, new QuantityType<>(hoursValue, Units.HOUR));
+            }
+
+            // Event code (device-specific)
+            Object eventObj = attributes.get("event");
+            if (eventObj instanceof Number) {
+                int eventCode = ((Number) eventObj).intValue();
+                updateState(CHANNEL_EVENT, new DecimalType(eventCode));
+            }
+
+            // Distance (incremental distance since last update)
+            Object distanceObj = attributes.get("distance");
+            if (distanceObj instanceof Number) {
+                double distanceMeters = ((Number) distanceObj).doubleValue();
+                updateState(CHANNEL_DISTANCE, new QuantityType<>(distanceMeters, SIUnits.METRE));
+            }
+
+            // Activity (OSMand-specific activity detection)
+            Object activityObj = attributes.get("activity");
+            if (activityObj != null) {
+                updateState(CHANNEL_ACTIVITY, new StringType(activityObj.toString()));
             }
 
             // GPS Satellites

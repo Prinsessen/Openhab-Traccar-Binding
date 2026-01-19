@@ -35,6 +35,28 @@ This document details the implementation of OBD-II (On-Board Diagnostics) channe
 | io205 | io205 | Trip Odometer 2 | km | Enable in FMM920 I/O settings |
 | io389 | io389 | Total ECU Mileage | km | Enable in FMM920 I/O settings |
 
+### Tracker Device Channels
+
+| Channel ID | AVL ID | Description | Unit | Notes |
+|------------|--------|-------------|------|-------|
+| pdop | - | Position Dilution of Precision (3D) | - | GPS accuracy indicator |
+| hdop | - | Horizontal Dilution of Precision | - | Horizontal GPS accuracy |
+| power | io16 | External Power Voltage | V | Vehicle battery voltage |
+| battery | io113 | Internal Battery Voltage | V | Tracker backup battery |
+| operator | io70 | GSM Operator Code | - | MCC+MNC code (e.g., 23801) |
+| vin | - | Vehicle Identification Number | - | VIN from OBD-II |
+| rssi | io21 | GSM Signal Strength | - | 0-5 bars or -113 to -51 dBm |
+
+### Experimental Channels
+
+| Channel ID | AVL ID | Description | Unit | Notes |
+|------------|--------|-------------|------|-------|
+| io42 | io42 | Intake Air Temperature | °C | OBD-II sensor |
+| io49 | io49 | Accelerator Pedal Position | % | Throttle position |
+| io51 | io51 | Fuel Type | - | Gasoline/Diesel/Electric |
+| tripDistance | - | Trip Distance | km | Current trip odometer |
+| eventCode | - | Event Code | - | Traccar event identifier |
+
 ## Implementation Details
 
 ### 1. Channel Constants
@@ -113,6 +135,72 @@ if (io199Obj instanceof Number) {
 }
 ```
 
+#### Tracker Device Handlers
+```java
+// PDOP/HDOP - GPS Quality Indicators
+Object pdopObj = position.getDouble("accuracy");  // From position object
+if (pdopObj != null) {
+    updateState(CHANNEL_PDOP, new DecimalType((Double) pdopObj));
+}
+
+// Power Voltage (io16)
+Object io16Obj = attributes.get("io16");
+if (io16Obj instanceof Number) {
+    double voltage = ((Number) io16Obj).doubleValue() / 1000.0;  // mV to V
+    updateState(CHANNEL_POWER, new QuantityType<>(voltage, Units.VOLT));
+}
+
+// Battery Voltage (io113)
+Object io113Obj = attributes.get("io113");
+if (io113Obj instanceof Number) {
+    double batteryVoltage = ((Number) io113Obj).doubleValue() / 1000.0;  // mV to V
+    updateState(CHANNEL_BATTERY, new QuantityType<>(batteryVoltage, Units.VOLT));
+}
+
+// GSM Operator (io70) - Strip decimal for MAP transformation
+Object operatorObj = attributes.get("io70");
+if (operatorObj instanceof Number) {
+    String operatorCode = String.valueOf(((Number) operatorObj).intValue());
+    updateState(CHANNEL_OPERATOR, new StringType(operatorCode));
+}
+
+// RSSI - Handle both Teltonika bar scale (0-5) and dBm scale
+Object io21Obj = attributes.get("io21");
+if (io21Obj instanceof Number) {
+    int rssiValue = ((Number) io21Obj).intValue();
+    if (rssiValue >= 0 && rssiValue <= 5) {
+        // Teltonika bar scale: 0-5
+        updateState(CHANNEL_RSSI, new DecimalType(rssiValue));
+    } else if (rssiValue < 0) {
+        // dBm scale: -113 to -51
+        updateState(CHANNEL_RSSI, new DecimalType(rssiValue));
+    }
+}
+```
+
+#### Experimental Channel Handlers
+```java
+// io42: Intake Air Temperature
+Object io42Obj = attributes.get("io42");
+if (io42Obj instanceof Number) {
+    int temp = ((Number) io42Obj).intValue();
+    updateState(CHANNEL_IO42, new QuantityType<>(temp, SIUnits.CELSIUS));
+}
+
+// io49: Accelerator Pedal Position
+Object io49Obj = attributes.get("io49");
+if (io49Obj instanceof Number) {
+    double position = ((Number) io49Obj).doubleValue();
+    updateState(CHANNEL_IO49, new QuantityType<>(position, Units.PERCENT));
+}
+
+// io51: Fuel Type
+Object io51Obj = attributes.get("io51");
+if (io51Obj instanceof Number) {
+    updateState(CHANNEL_IO51, new DecimalType(((Number) io51Obj).intValue()));
+}
+```
+
 ### 3. Channel Definitions
 
 Located in `thing-types.xml`:
@@ -165,6 +253,22 @@ Number:Dimensionless Vehicle10_ObdFuelLevel "Fuel Level [%.1f %%]" <oil> (gVehic
 Number:Length Vehicle10_Io199 "Trip 1 [%.1f km]" <line> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:io199", unit="km"}
 Number:Length Vehicle10_Io205 "Trip 2 [%.1f km]" <line> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:io205", unit="km"}
 Number:Length Vehicle10_Io389 "Total ECU Mileage [%.1f km]" <line> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:io389", unit="km"}
+
+// Tracker Device Items
+Number Vehicle10_Pdop "GPS 3D Quality [JS(pdop.js):%s]" <zoom> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:pdop"}
+Number Vehicle10_Hdop "GPS 2D Quality [JS(hdop.js):%s]" <zoom> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:hdop"}
+Number:ElectricPotential Vehicle10_Power "Power [%.2f V]" <battery> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:power"}
+Number:ElectricPotential Vehicle10_Battery "Battery [%.2f V]" <battery> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:battery"}
+String Vehicle10_Operator "Mobile Operator [MAP(operator.map):%s]" <network> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:operator"}
+String Vehicle10_Vin "VIN [%s]" <text> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:vin"}
+Number Vehicle10_Rssi "GSM Signal [%d]" <network> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:rssi"}
+
+// Experimental Items
+Number:Temperature Vehicle10_Io42 "Intake Air Temp [%.1f %unit%]" <temperature> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:io42"}
+Number:Dimensionless Vehicle10_Io49 "Throttle [%.1f %%]" <pressure> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:io49"}
+Number Vehicle10_Io51 "Fuel Type [%d]" <oil> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:io51"}
+Number:Length Vehicle10_TripDistance "Trip Distance [%.1f km]" <line> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:tripDistance", unit="km"}
+Number Vehicle10_EventCode "Event Code [%d]" <text> (gVehicle10) {channel="traccar:device:gpsserver:866088075183606:eventCode"}
 ```
 
 ### 5. Sitemap Configuration
@@ -299,10 +403,41 @@ Engine Running (Idle):
 - Speed: 0-5 km/h ✓
 - Fuel Level: 86% (inverted from 14%) ✓
 
+GPS & Tracker Data:
+- PDOP: 1.1-1.5 (Excellent) ✓
+- HDOP: 0.8-1.2 (Excellent) ✓
+- GSM Operator: 23801 → TDC NET (Denmark) ✓
+- Power: 14.3V → 13.9V ✓
+- Battery: 4.1V (tracker internal) ✓
+- RSSI: 4 bars (Good signal) ✓
+
 Ignition Off:
 - All OBD-II channels: NULL ✓
 - Power voltage drops: 14.3V → 13.9V ✓
+- Tracker channels remain active ✓
 ```
+
+### Channel Availability
+
+**Always Available** (regardless of ignition):
+- GPS data (PDOP, HDOP, coordinates)
+- Tracker power and battery voltage
+- GSM operator and signal strength (RSSI)
+- Trip distance from tracker
+
+**Available When Ignition ON**:
+- All OBD-II channels (requires dongle paired and engine running)
+- ECU trip meters (requires FMM920 configuration)
+- Experimental IO channels
+
+**Validation Results**:
+- ✅ All 10 OBD-II channels working correctly
+- ✅ All 7 tracker channels displaying properly (pdop, hdop, power, battery, operator, vin, rssi)
+- ✅ All 5 experimental channels detected in webhook
+- ✅ GPS quality transformations (pdop.js, hdop.js) working
+- ✅ Operator MAP transformation (800+ operators, 119 countries) displaying correctly
+- ✅ Fuel trim quality indicator (fuelTrim.js) functioning
+- ⏸️ Trip meters (io199, io205, io389) awaiting FMM920 AVL ID configuration
 
 ### Common Issues & Solutions
 

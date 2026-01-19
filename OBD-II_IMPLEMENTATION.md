@@ -229,6 +229,60 @@ File: `transform/fuelTrim.js`
 - **Monitor** (10-15%): Significant adjustment, check soon
 - **Check Engine** (>15%): Problem detected, service needed
 
+### GPS Quality Indicators
+
+Files: `transform/pdop.js` and `transform/hdop.js`
+
+```javascript
+(function(i) {
+    var val = parseFloat(i);
+    if (isNaN(val)) return "Unknown";
+    
+    if (val <= 2) return "Excellent";
+    if (val <= 5) return "Good";
+    if (val <= 10) return "Fair";
+    return "Poor";
+})(input)
+```
+
+**Usage**: Converts numeric GPS precision values to user-friendly quality ratings.
+- **PDOP** (3D Position Dilution of Precision): Overall GPS accuracy
+- **HDOP** (Horizontal Dilution of Precision): Horizontal position accuracy
+
+**Ranges**:
+- **Excellent** (≤2): High precision, ideal conditions
+- **Good** (2-5): Normal GPS operation
+- **Fair** (5-10): Acceptable accuracy
+- **Poor** (>10): Low accuracy, limited satellite visibility
+
+### Mobile Operator Code Transformation
+
+File: `transform/operator.map`
+
+**Coverage**: 400+ worldwide mobile operators from 50+ countries
+
+**Supported Regions**:
+- 🇪🇺 **Europe**: Denmark, Norway, Sweden, Finland, UK, Germany, France, Spain, Italy, Netherlands, Belgium, Switzerland, Austria, Poland, Czech Republic, Portugal, Greece, Romania, Hungary, Ireland, Iceland, Russia, Ukraine
+- 🌎 **Americas**: USA, Canada, Mexico, Brazil, Argentina, Chile, Colombia
+- 🌏 **Asia-Pacific**: China, Japan, South Korea, India, Singapore, Malaysia, Thailand, Philippines, Indonesia, Vietnam, Taiwan, Hong Kong, Australia, New Zealand
+- 🕌 **Middle East**: Turkey, Saudi Arabia, UAE, Israel
+- 🌍 **Africa**: Egypt, South Africa, Nigeria, Kenya
+
+**Format**: MCC+MNC codes (Mobile Country Code + Mobile Network Code)
+
+**Example mappings**:
+```
+23801=TDC NET (Denmark)
+310030=AT&T (USA)
+44010=NTT Docomo (Japan)
+50501=Telstra (Australia)
+26201=T-Mobile Germany (Germany)
+```
+
+**Usage**: Automatically converts numeric operator codes (e.g., "23801") to readable names ("TDC NET (Denmark)") in the UI.
+
+**Applied to**: `Vehicle10_Operator` channel (io70 - GSM operator code)
+
 ## Testing & Validation
 
 ### Test Data Observed

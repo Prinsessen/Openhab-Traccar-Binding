@@ -270,6 +270,39 @@
 20209=Wind Hellas (Greece)
 20210=Wind Hellas (Greece)
 
+# Croatia (219)
+21901=T-Mobile Croatia (Croatia)
+21902=Tele2 (Croatia)
+21910=Vipnet/A1 (Croatia)
+
+# Bosnia and Herzegovina (218)
+21803=HT Eronet (Bosnia and Herzegovina)
+21805=m:tel (Bosnia and Herzegovina)
+21890=BH Mobile (Bosnia and Herzegovina)
+
+# Montenegro (297)
+29701=Telenor Montenegro (Montenegro)
+29702=T-Mobile Montenegro (Montenegro)
+29703=m:tel (Montenegro)
+
+# Albania (276)
+27601=Vodafone Albania (Albania)
+27602=Vodafone Albania (Albania)
+27603=Eagle Mobile (Albania)
+27604=Plus Communication (Albania)
+
+# North Macedonia (294)
+29401=T-Mobile Macedonia (North Macedonia)
+29402=ONE/VIP (North Macedonia)
+29403=Vip (North Macedonia)
+
+# Georgia (282)
+28201=Geocell (Georgia)
+28202=Magti/MagtiCom (Georgia)
+28203=Magticom (Georgia)
+28204=Beeline Georgia (Georgia)
+28205=Silknet (Georgia)
+
 # Romania (226)
 22601=Vodafone Romania (Romania)
 22603=Telekom Romania (Romania)
@@ -311,6 +344,24 @@
 25044=Beeline (Russia)
 25099=Beeline (Russia)
 
+# Kazakhstan (401)
+40101=Beeline/KaR-Tel (Kazakhstan)
+40102=Kcell/Activ (Kazakhstan)
+40107=Dalacom/Altel (Kazakhstan)
+40108=Kazakhtelecom/Tele2 (Kazakhstan)
+
+# Kyrgyzstan (437)
+43701=Beeline/Sky Mobile (Kyrgyzstan)
+43705=Megacom (Kyrgyzstan)
+43709=O!/NUR Telecom (Kyrgyzstan)
+
+# Tajikistan (436)
+43601=Tcell (Tajikistan)
+43602=Megafon Tajikistan (Tajikistan)
+43603=MLT/Indigo (Tajikistan)
+43604=Babilon-Mobile (Tajikistan)
+43605=Beeline (Tajikistan)
+
 # Ukraine (255)
 25501=MTS Ukraine (Ukraine)
 25502=Beeline Ukraine (Ukraine)
@@ -324,6 +375,20 @@
 28602=Vodafone Turkey (Turkey)
 28603=Avea (Turkey)
 28604=Aycell (Turkey)
+
+# Afghanistan (412)
+41201=AWCC (Afghan Wireless) (Afghanistan)
+41220=Roshan (Afghanistan)
+41240=Areeba/MTN (Afghanistan)
+41250=Etisalat Afghanistan (Afghanistan)
+41280=Salaam (Afghanistan)
+
+# Pakistan (410)
+41001=Mobilink/Jazz (Pakistan)
+41003=Ufone (Pakistan)
+41004=Zong (Pakistan)
+41006=Telenor Pakistan (Pakistan)
+41007=Warid (Pakistan)
 
 # Saudi Arabia (420)
 42001=Al Jawal (Saudi Arabia)

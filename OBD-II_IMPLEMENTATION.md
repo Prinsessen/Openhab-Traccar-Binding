@@ -26,11 +26,11 @@ This document details the implementation of OBD-II (On-Board Diagnostics) channe
 - 1A inline fuse
 - Electrical tape
 
-![8-pin to 16-pin OBD Adapter Cable](resources/8pin_16pin_ODB_cable.png)
+![8-pin to 16-pin OBD Adapter Cable](docs/resources/8pin_16pin_ODB_cable.png)
 
 #### Wire Identification (Indian Motorcycle Service Plug)
 
-![Indian Motorcycle Service Plug Pinout](resources/indian_motorcycle_service_plug.png)
+![Indian Motorcycle Service Plug Pinout](docs/resources/indian_motorcycle_service_plug.png)
 
 **8-pin Indian Motorcycle diagnostic connector pinout:**
 
